@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Relatório de Inadimplentes</title>
+    
+    <!-- Configurações para celular reconhecer como Aplicativo -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#3498db">
+    
+    <!-- Ícone Padrão Embutido (Recibo 🧾) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧾</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧾</text></svg>">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .header-logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header-logo img {
+            max-height: 80px;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+        h2, h3 {
+            color: #2c3e50;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        .form-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .form-control {
+            flex: 1;
+            min-width: 200px;
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        select, input[type="text"], input[type="date"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .checkbox-control {
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+            margin-top: 25px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .btn-success {
+            background-color: #27ae60;
+            width: 100%;
+        }
+        .btn-success:hover {
+            background-color: #2ecc71;
+        }
+        .btn-remove {
+            background-color: #e74c3c;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        .btn-remove:hover {
+            background-color: #c0392b;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+            font-size: 14px;
+        }
+        th {
+            background-color: #f8f9fa;
+        }
+        /* Modal (Pop-up) */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+        }
+        .modal-content textarea {
+            width: 100%;
+            height: 250px;
+            padding: 10px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            font-family: monospace;
+            resize: vertical;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .close {
+            float: right;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .aviso-dica {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: -15px;
+            margin-bottom: 15px;
+            display: block;
+        }
+        /* Responsividade para celular */
+        @media (max-width: 600px) {
+            th, td { font-size: 12px; padding: 5px; }
+            button { font-size: 14px; padding: 8px 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-logo">
+        <img src="#" alt="Logo da Empresa" onerror="this.style.display='none'">
+    </div>
+
+    <h2>Relatório de Inadimplentes</h2>
+
+    <!-- Cabeçalho -->
+    <div class="form-group">
+        <div class="form-control">
+            <label for="empresa">Empresa:</label>
+            <select id="empresa">
+                <option value="MARCO ANTÔNIO">MARCO ANTÔNIO</option>
+                <option value="COLMÉIA">COLMÉIA</option>
+            </select>
+        </div>
+        <div class="form-control">
+            <label for="banco">Banco:</label>
+            <select id="banco">
+                <option value="Bolecode Itaú">Bolecode Itaú</option>
+                <option value="Itaú">Itaú</option>
+                <option value="Santander">Santander</option>
+                <option value="Bradesco">Bradesco</option>
+                <option value="Caixa Econômica">Caixa Econômica</option>
+                <option value="Sicoob">Sicoob</option>
+            </select>
+        </div>
+        <div class="form-control">
+            <label for="remetente">Remetente:</label>
+            <select id="remetente">
+                <option value="LAURA">LAURA</option>
+                <option value="ISABELA">ISABELA</option>
+            </select>
+        </div>
+    </div>
+
+    <h3>Lançar Nota</h3>
+    <span class="aviso-dica">Dica: Aperte ENTER em qualquer campo para lançar rapidamente. O nome do cliente será mantido.</span>
+    
+    <!-- Formulário de Lançamento -->
+    <div class="form-group">
+        <div class="form-control">
+            <label for="cliente">Cliente:</label>
+            <input type="text" id="cliente" placeholder="Nome do Cliente" onkeydown="verificarEnter(event)">
+        </div>
+        <div class="form-control">
+            <label for="nf">Nº da NF:</label>
+            <input type="text" id="nf" placeholder="Ex: 4817" onkeydown="verificarEnter(event)">
+        </div>
+        <div class="form-control">
+            <label for="vencimento">Vencimento:</label>
+            <input type="date" id="vencimento" onkeydown="verificarEnter(event)">
+        </div>
+        <div class="form-control">
+            <label for="valor">Valor (R$):</label>
+            <input type="text" id="valor" oninput="mascararMoeda(this)" onkeydown="verificarEnter(event)" placeholder="0,00">
+        </div>
+        <div class="form-control checkbox-control">
+            <input type="checkbox" id="avisado">
+            <label for="avisado" style="margin:0;">Avisado?</label>
+        </div>
+    </div>
+    
+    <button onclick="adicionarLancamento()">Adicionar Lançamento</button>
+
+    <hr style="margin: 30px 0; border: 1px solid #ecf0f1;">
+
+    <!-- Lista de Lançamentos -->
+    <div style="overflow-x:auto;">
+        <table id="tabela-clientes">
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th>NF</th>
+                    <th>Vencimento</th>
+                    <th>Valor (R$)</th>
+                    <th>Aviso</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Lançamentos aparecerão aqui -->
+            </tbody>
+        </table>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <button class="btn-success" onclick="abrirConferencia()">Finalizar e Enviar</button>
+    </div>
+</div>
+
+<!-- Modal de Conferência e Envio -->
+<div id="modalConferencia" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="fecharConferencia()">&times;</span>
+        <h3>Conferência de Mensagem</h3>
+        <span class="aviso-dica" style="margin-top: 0; margin-bottom: 10px;">Você pode editar ou personalizar o texto da mensagem diretamente na caixa abaixo antes de enviar.</span>
+        
+        <!-- Campo agora editável (sem atributo readonly) -->
+        <textarea id="texto-mensagem" placeholder="Digite ou ajuste a mensagem aqui..."></textarea>
+        
+        <button class="btn-success" onclick="enviarWhatsApp()">Escolher Contato e Enviar no WhatsApp</button>
+    </div>
+</div>
+
+<script>
+    let lancamentos = [];
+
+    function verificarEnter(event) {
+        if (event.key === 'Enter') {
+            adicionarLancamento();
+        }
+    }
+
+    function mascararMoeda(campo) {
+        let valor = campo.value.replace(/\D/g, ""); 
+        if (valor === "") {
+            campo.value = "";
+            return;
+        }
+        valor = (parseInt(valor) / 100).toFixed(2) + "";
+        valor = valor.replace(".", ","); 
+        valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1."); 
+        campo.value = valor;
+    }
+
+    function formatarData(dataISO) {
+        if (!dataISO) return "";
+        const partes = dataISO.split('-');
+        return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
+
+    function formatarValorExibicao(valorNum) {
+        return valorNum.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function adicionarLancamento() {
+        const clienteInput = document.getElementById('cliente');
+        const nfInput = document.getElementById('nf');
+        const vencimentoInput = document.getElementById('vencimento');
+        const valorInput = document.getElementById('valor');
+        const avisadoInput = document.getElementById('avisado');
+
+        if (!clienteInput.value || !nfInput.value || !vencimentoInput.value || !valorInput.value) {
+            alert("Por favor, preencha todos os campos da nota.");
+            return;
+        }
+
+        const valorLimpo = valorInput.value.replace(/\./g, "").replace(",", ".");
+        const valorFloat = parseFloat(valorLimpo);
+
+        const novoLancamento = {
+            cliente: clienteInput.value.toUpperCase().trim(),
+            nf: nfInput.value,
+            vencimento: vencimentoInput.value,
+            valor: valorFloat,
+            avisado: avisadoInput.checked
+        };
+
+        lancamentos.push(novoLancamento);
+        atualizarTabela();
+
+        nfInput.value = '';
+        vencimentoInput.value = '';
+        valorInput.value = '';
+        avisadoInput.checked = false;
+        
+        nfInput.focus();
+    }
+
+    function removerLancamento(index) {
+        lancamentos.splice(index, 1);
+        atualizarTabela();
+    }
+
+    function atualizarTabela() {
+        const tbody = document.querySelector('#tabela-clientes tbody');
+        tbody.innerHTML = '';
+
+        lancamentos.forEach((item, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${item.cliente}</strong></td>
+                <td>${item.nf}</td>
+                <td>${formatarData(item.vencimento)}</td>
+                <td>R$ ${formatarValorExibicao(item.valor)}</td>
+                <td>${item.avisado ? 'Sim' : 'Não'}</td>
+                <td><button class="btn-remove" onclick="removerLancamento(${index})">Remover</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function gerarTextoMensagem() {
+        const empresa = document.getElementById('empresa').value;
+        const banco = document.getElementById('banco').value;
+        const remetente = document.getElementById('remetente').value;
+
+        let texto = `Bom dia!!\nSegue os inadimplentes da Empresa ${empresa} Banco (${banco}) ${remetente}\n\n`;
+
+        const clientesAgrupados = {};
+        lancamentos.forEach(item => {
+            if (!clientesAgrupados[item.cliente]) {
+                clientesAgrupados[item.cliente] = [];
+            }
+            clientesAgrupados[item.cliente].push(item);
+        });
+
+        for (const [nomeCliente, notas] of Object.entries(clientesAgrupados)) {
+            texto += `${nomeCliente}\n`;
+            notas.forEach(nota => {
+                let avisoStr = nota.avisado ? ' (AVISADO)' : '';
+                texto += `NF: ${nota.nf} | Venc.: ${formatarData(nota.vencimento)} | Valor: R$ ${formatarValorExibicao(nota.valor)}${avisoStr}\n`;
+            });
+            texto += `\n`; 
+        }
+
+        return texto.trim();
+    }
+
+    function abrirConferencia() {
+        if (lancamentos.length === 0) {
+            alert("Adicione pelo menos um lançamento antes de enviar.");
+            return;
+        }
+        const textoArea = document.getElementById('texto-mensagem');
+        textoArea.value = gerarTextoMensagem();
+        document.getElementById('modalConferencia').style.display = 'flex';
+    }
+
+    function fecharConferencia() {
+        document.getElementById('modalConferencia').style.display = 'none';
+    }
+
+    function enviarWhatsApp() {
+        const texto = encodeURIComponent(document.getElementById('texto-mensagem').value);
+        const url = `https://api.whatsapp.com/send?text=${texto}`;
+        window.open(url, '_blank');
+        fecharConferencia();
+    }
+</script>
+
+</body>
+</html>
