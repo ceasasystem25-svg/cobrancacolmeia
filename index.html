@@ -140,7 +140,7 @@
         }
         .modal-content textarea {
             width: 100%;
-            height: 250px;
+            height: 300px;
             padding: 10px;
             box-sizing: border-box;
             margin-bottom: 15px;
@@ -183,8 +183,8 @@
         <div class="form-control">
             <label for="empresa">Empresa:</label>
             <select id="empresa">
-                <option value="MARCO ANTÔNIO">MARCO ANTÔNIO</option>
-                <option value="COLMÉIA">COLMÉIA</option>
+                <option value="Marco Antônio">Marco Antônio</option>
+                <option value="Colméia">Colméia</option>
             </select>
         </div>
         <div class="form-control">
@@ -201,8 +201,8 @@
         <div class="form-control">
             <label for="remetente">Remetente:</label>
             <select id="remetente">
-                <option value="LAURA">LAURA</option>
-                <option value="ISABELA">ISABELA</option>
+                <option value="Laura">Laura</option>
+                <option value="Isabela">Isabela</option>
             </select>
         </div>
     </div>
@@ -269,7 +269,6 @@
         <h3>Conferência de Mensagem</h3>
         <span class="aviso-dica" style="margin-top: 0; margin-bottom: 10px;">Você pode editar ou personalizar o texto da mensagem diretamente na caixa abaixo antes de enviar.</span>
         
-        <!-- Campo agora editável (sem atributo readonly) -->
         <textarea id="texto-mensagem" placeholder="Digite ou ajuste a mensagem aqui..."></textarea>
         
         <button class="btn-success" onclick="enviarWhatsApp()">Escolher Contato e Enviar no WhatsApp</button>
@@ -366,11 +365,17 @@
 
     function gerarTextoMensagem() {
         const empresa = document.getElementById('empresa').value;
-        const banco = document.getElementById('banco').value;
         const remetente = document.getElementById('remetente').value;
 
-        let texto = `Bom dia!!\nSegue os inadimplentes da Empresa ${empresa} Banco (${banco}) ${remetente}\n\n`;
+        // Cabeçalho da mensagem
+        let texto = `Bom dia! Tudo bem?\n\n`;
+        texto += `Aqui é ${remetente} da ${empresa}\n\n`;
+        
+        // Ajusta automaticamente para singular ou plural
+        const textoBoleto = lancamentos.length > 1 ? "os seguintes boletos:" : "o seguinte boleto:";
+        texto += `Estou entrando em contato, pois consta em aberto em nosso sistema ${textoBoleto}\n\n`;
 
+        // Agrupamento por cliente
         const clientesAgrupados = {};
         lancamentos.forEach(item => {
             if (!clientesAgrupados[item.cliente]) {
@@ -379,16 +384,28 @@
             clientesAgrupados[item.cliente].push(item);
         });
 
+        const numClientes = Object.keys(clientesAgrupados).length;
+
+        // Geração da lista de notas
         for (const [nomeCliente, notas] of Object.entries(clientesAgrupados)) {
-            texto += `${nomeCliente}\n`;
+            // Se houver mais de um cliente na lista, exibe o nome para separar. Caso contrário, deixa limpo (igual ao seu modelo).
+            if (numClientes > 1) {
+                texto += `*Cliente: ${nomeCliente}*\n`;
+            }
+            
             notas.forEach(nota => {
                 let avisoStr = nota.avisado ? ' (AVISADO)' : '';
-                texto += `NF: ${nota.nf} | Venc.: ${formatarData(nota.vencimento)} | Valor: R$ ${formatarValorExibicao(nota.valor)}${avisoStr}\n`;
+                texto += `NF ${nota.nf}  |   Venc. ${formatarData(nota.vencimento)}   |  Valor R$ ${formatarValorExibicao(nota.valor)}${avisoStr}\n`;
             });
             texto += `\n`; 
         }
 
-        return texto.trim();
+        // Rodapé da mensagem
+        texto += `Lembrando que, após 10 dias do vencimento, o boleto é automaticamente encaminhado para protesto.\n\n`;
+        texto += `Peço, por gentileza, que verifique a situação. Caso o pagamento já tenha sido realizado, me envie o comprovante para que eu possa atualizar nosso sistema.\n\n`;
+        texto += `Qualquer dúvida, fico à disposição! 😊`;
+
+        return texto;
     }
 
     function abrirConferencia() {
